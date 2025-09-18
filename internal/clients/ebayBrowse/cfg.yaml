@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../configuration-schema.json
+package: generatedClients
+output: ebayBrowseClient.gen.go
+generate:
+  models: true
+  client: true
+  embedded-spec: true

@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/m8ypie/mtg-sale-manager/config"
-	"github.com/m8ypie/mtg-sale-manager/db"
-	"github.com/m8ypie/mtg-sale-manager/models"
+	"github.com/m8ypie/mtg-sale-manager/internal/db"
 )
 
 func main() {
