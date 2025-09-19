@@ -2895,7 +2895,7 @@ func NewSearchRequest(server string, params *SearchParams) (*http.Request, error
 
 		queryURL.RawQuery = queryValues.Encode()
 	}
-
+	println(queryURL.String())
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err

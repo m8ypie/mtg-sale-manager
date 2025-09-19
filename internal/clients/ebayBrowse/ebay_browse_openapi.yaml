@@ -1,5 +1,5 @@
 ---
-openapi: "3.0.0"
+openapi: "3.1.0"
 info:
   title: "Browse API"
   description: "The Browse API has the following resources:<ul><li><b>item_summary:</b><br>Allows\

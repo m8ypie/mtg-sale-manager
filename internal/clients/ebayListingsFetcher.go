@@ -4,10 +4,11 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	generatedClients "github.com/m8ypie/mtg-sale-manager/internal/clients/ebayBrowse"
+	"github.com/m8ypie/mtg-sale-manager/internal/config"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 // eBay OAuth 2.0 endpoints.
@@ -35,48 +36,102 @@ func TokenSource(base oauth2.TokenSource) *BearerTokenSource {
 }
 
 // Token allows BearerTokenSource to implement oauth2.TokenSource.
-func (ts *BearerTokenSource) Token() (*oauth2.Token, error) {
-	t, err := ts.base.Token()
-	if t != nil {
-		t.TokenType = "Bearer"
+// func (ts *BearerTokenSource) Token() (*oauth2.Token, error) {
+// 	t, err := ts.base.Token()
+// 	if t != nil {
+// 		t.TokenType = "Bearer"
+// 	}
+// 	return t, err
+// }
+
+func NewEbayListingsFetcherConfigProdDefault() *oauth2.Config {
+	return &oauth2.Config{
+		ClientID:     config.EbayAppId,
+		ClientSecret: config.EbayCertId,
+		RedirectURL:  "Joel_Berta-JoelBert-mtglis-lhxiiqgo",
+		Endpoint:     OAuth20Endpoint,
+
+		Scopes: []string{"https://api.ebay.com/oauth/api_scope/commerce.identity.readonly",
+			"https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
+			"https://api.ebay.com/oauth/api_scope",
+			"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
+			"https://api.ebay.com/oauth/api_scope/sell.marketing",
+			"https://api.ebay.com/oauth/api_scope/sell.inventory.readonly",
+			"https://api.ebay.com/oauth/api_scope/sell.inventory",
+			"https://api.ebay.com/oauth/api_scope/sell.account.readonly",
+			"https://api.ebay.com/oauth/api_scope/sell.account",
+			"https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
+			"https://api.ebay.com/oauth/api_scope/sell.fulfillment"},
 	}
-	return t, err
 }
 
-func NewEbayListingsFetcherConfigProdDefault() clientcredentials.Config {
-	return clientcredentials.Config{
-		ClientID:     "your client id",
-		ClientSecret: "your client secret",
-		TokenURL:     OAuth20Endpoint.TokenURL,
-		Scopes:       []string{ebay.ScopeRoot /* your scopes */},
-	}
+type EbayListingsFetcherHttpClient struct {
+	Client *http.Client
+
+	TokenSource oauth2.TokenSource
+
+	OAuth2Tokens *oauth2.Token
 }
 
-func NewEbayListingsFetcherHttpClientProdDefault() *http.Client {
-	config := NewEbayListingsFetcherConfigProdDefault()
+func NewEbayListingsFetcherHttpClientProdDefault() *EbayListingsFetcherHttpClient {
+	defConfig := NewEbayListingsFetcherConfigProdDefault()
+
 	ctx := context.Background()
-	tc := oauth2.NewClient(ctx, ebay.TokenSource(cfg.TokenSource(ctx)))
-	c := &http.Client{Transport: tc, BaseURL: "https://api.ebay.com/"}
 
-	return c
+	tokenSource := defConfig.TokenSource(ctx, &oauth2.Token{
+		RefreshToken: config.EbayRefreshToken,
+		TokenType:    "bearer",
+		Expiry:       time.Now(),
+	})
+
+	oAuth2Tokens, err := tokenSource.Token()
+	if err != nil {
+		log.Fatalf("Error retrieving access token: %v", err)
+	}
+
+	tc := oauth2.NewClient(ctx, tokenSource)
+
+	return &EbayListingsFetcherHttpClient{
+		Client:       tc,
+		TokenSource:  tokenSource,
+		OAuth2Tokens: oAuth2Tokens,
+	}
 }
 
 type EbayListingsFetcher struct {
 	ClientWithResponses *generatedClients.ClientWithResponses
 }
 
-func NewEbayListingsFetcher(httpClient *http.Client) *EbayListingsFetcher {
-	c, err := generatedClients.NewClientWithResponses("https://api.ebay.com/", generatedClients.WithHTTPClient(httpClient))
+func NewEbayListingsFetcher(httpClient *EbayListingsFetcherHttpClient) *EbayListingsFetcher {
+	re := generatedClients.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+		if httpClient.OAuth2Tokens.Expiry.After(time.Now()) {
+			httpClient.OAuth2Tokens, _ = httpClient.TokenSource.Token()
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Language", "en-AU")
+		req.Header.Set("Accept-Language", "en-AU")
+		req.Header.Set("X-EBAY-C-MARKETPLACE-ID", "EBAY_AU")
+		req.Header.Set("Authorization", "Bearer "+httpClient.OAuth2Tokens.AccessToken)
+		// httpClient.OAuth2Tokens.SetAuthHeader(req)
+		println("hererere %s", req.Header.Get("Authorization"))
+
+		return nil
+	})
+	println("hererere %s", httpClient.OAuth2Tokens.AccessToken)
+	c, err := generatedClients.NewClientWithResponses("https://api.ebay.com/buy/browse/v1", re)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return &EbayListingsFetcher{
 		ClientWithResponses: c,
 	}
 }
 
-func (e *EbayListingsFetcher) getListings(itemID string) (*generatedClients.GetItemsResponse, error) {
-	return e.ClientWithResponses.GetItemsWithResponse(context.Background(), &generatedClients.GetItemsParams{
-		ItemIds: &itemID,
+func (e *EbayListingsFetcher) GetListings(query string) (*generatedClients.SearchResponse, error) {
+	filter := "itemLocationCountry:AU"
+	return e.ClientWithResponses.SearchWithResponse(context.Background(), &generatedClients.SearchParams{
+		Q:      &query,
+		Filter: &filter,
 	})
 }
