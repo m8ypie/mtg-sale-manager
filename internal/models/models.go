@@ -15,7 +15,7 @@ type Model struct {
 
 type EbayListingGorm struct {
 	gorm.Model
-	EbayListingID      uint   `gorm:"column:ebay_listing_id"`
+	EbayListingId      string `gorm:"column:ebay_listing_id"`
 	EbayOfferId        string `gorm:"column:ebay_offer_id"`
 	Sku                string `gorm:"column:sku"`
 	ScryFallId         string `gorm:"column:scryfall_id"`
@@ -24,7 +24,7 @@ type EbayListingGorm struct {
 
 type EbayListing struct {
 	Model
-	EbayListingID      uint
+	EbayListingId      string
 	EbayOfferId        string
 	Sku                string
 	ScryFallId         string
@@ -39,7 +39,7 @@ func (m EbayListingGorm) ToEntity() EbayListing {
 			UpdatedAt: m.UpdatedAt,
 			DeletedAt: m.DeletedAt,
 		},
-		EbayListingID:      m.EbayListingID,
+		EbayListingId:      m.EbayListingId,
 		EbayOfferId:        m.EbayOfferId,
 		Sku:                m.Sku,
 		ScryFallId:         m.ScryFallId,
@@ -55,10 +55,16 @@ func (m EbayListingGorm) FromEntity(entity EbayListing) interface{} {
 			UpdatedAt: entity.UpdatedAt,
 			DeletedAt: entity.DeletedAt,
 		},
-		EbayListingID:      entity.EbayListingID,
+		EbayListingId:      entity.EbayListingId,
 		EbayOfferId:        entity.EbayOfferId,
 		Sku:                entity.Sku,
 		ScryFallId:         entity.ScryFallId,
 		EchoMtgInventoryId: entity.EchoMtgInventoryId,
 	}
+}
+
+type PriceInfo struct {
+	Min     float64
+	Max     float64
+	Average float64
 }

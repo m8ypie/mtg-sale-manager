@@ -2,10 +2,13 @@ package clients
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
+	scryfall "github.com/BlueMonday/go-scryfall"
 	generatedClients "github.com/m8ypie/mtg-sale-manager/internal/clients/ebayBrowse"
 	"github.com/m8ypie/mtg-sale-manager/internal/config"
 	"golang.org/x/oauth2"
@@ -134,4 +137,30 @@ func (e *EbayListingsFetcher) GetListings(query string) (*generatedClients.Searc
 		Q:      &query,
 		Filter: &filter,
 	})
+}
+
+func (e *EbayListingsFetcher) GetListingsForCard(scryfallCard *scryfall.Card) *generatedClients.SearchResponse {
+	filter := "itemLocationCountry:AU"
+	query := removePunctuation(scryfallCard.Name + " " + scryfallCard.CollectorNumber)
+	println("query is " + query)
+	res, err := e.ClientWithResponses.SearchWithResponse(context.Background(), &generatedClients.SearchParams{
+		Q:      &query,
+		Filter: &filter,
+	})
+	if err != nil {
+		log.Fatalf("Error fetching eBay listings: %v", err)
+	}
+
+	reqBodyString := string(res.Body)
+	fmt.Printf("resp.JSON200: %v\n", reqBodyString)
+	return res
+}
+
+func removePunctuation(s string) string {
+	// Define a regular expression to match common punctuation characters.
+	// You can customize this pattern based on which specific punctuation
+	// you want to remove.
+	// `[^a-zA-Z0-9\s]` matches any character that is not an alphanumeric character or whitespace.
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s]+`)
+	return re.ReplaceAllString(s, "")
 }
