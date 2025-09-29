@@ -113,7 +113,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BulkInventoryItemResponse"
+                $ref: "#/components/schemas/BulkInventoryItemResponseBody"
           x-response-codes:
             errors:
               25504:
@@ -406,7 +406,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BulkGetInventoryItemResponse"
+                $ref: "#/components/schemas/BulkGetInventoryItemResponseBody"
         "400":
           description: "Bad Request"
           x-response-codes:
@@ -510,7 +510,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BulkPriceQuantityResponse"
+                $ref: "#/components/schemas/BulkPriceQuantityResponseBody"
         "400":
           description: "Bad Request"
           x-response-codes:
@@ -724,7 +724,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BaseResponse"
+                $ref: "#/components/schemas/BaseResponseBody"
           x-response-codes:
             errors:
               25504:
@@ -769,7 +769,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BaseResponse"
+                $ref: "#/components/schemas/BaseResponseBody"
           x-response-codes:
             errors:
               25504:
@@ -1575,7 +1575,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BaseResponse"
+                $ref: "#/components/schemas/BaseResponseBody"
           x-response-codes:
             errors:
               25124:
@@ -1605,7 +1605,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BaseResponse"
+                $ref: "#/components/schemas/BaseResponseBody"
           x-response-codes:
             errors:
               25124:
@@ -2013,7 +2013,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BaseResponse"
+                $ref: "#/components/schemas/BaseResponseBody"
           x-response-codes:
             errors:
               25124:
@@ -2049,7 +2049,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BaseResponse"
+                $ref: "#/components/schemas/BaseResponseBody"
           x-response-codes:
             errors:
               25124:
@@ -2487,7 +2487,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BulkMigrateListingResponse"
+                $ref: "#/components/schemas/BulkMigrateListingResponseBody"
         "400":
           description: "Bad Request"
           x-response-codes:
@@ -2872,7 +2872,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BulkOfferResponse"
+                $ref: "#/components/schemas/BulkOfferResponseBody"
         "400":
           description: "Bad Request"
           x-response-codes:
@@ -3004,7 +3004,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BulkPublishResponse"
+                $ref: "#/components/schemas/BulkPublishResponseBody"
           x-response-codes:
             errors:
               25028:
@@ -3685,7 +3685,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OfferResponse"
+                $ref: "#/components/schemas/OfferResponseBody"
         "400":
           description: "Bad Request"
           x-response-codes:
@@ -3892,7 +3892,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OfferResponse"
+                $ref: "#/components/schemas/OfferResponseBody"
           x-response-codes:
             errors:
               25028:
@@ -4438,7 +4438,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FeesSummaryResponse"
+                $ref: "#/components/schemas/FeesSummaryResponseBody"
         "400":
           description: "Bad Request"
           x-response-codes:
@@ -4506,7 +4506,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PublishResponse"
+                $ref: "#/components/schemas/PublishResponseBody"
           x-response-codes:
             errors:
               25028:
@@ -5063,7 +5063,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PublishResponse"
+                $ref: "#/components/schemas/PublishResponseBody"
           x-response-codes:
             errors:
               25028:
@@ -5568,7 +5568,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WithdrawResponse"
+                $ref: "#/components/schemas/WithdrawResponseBody"
           x-response-codes:
             errors:
               25402:
@@ -5680,7 +5680,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InventoryLocationResponse"
+                $ref: "#/components/schemas/InventoryLocationResponseBody"
         "400":
           description: "Bad Request"
           x-response-codes:
@@ -6042,7 +6042,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LocationResponse"
+                $ref: "#/components/schemas/LocationResponseBody"
         "400":
           description: "Bad Request"
         "500":
@@ -6317,7 +6317,7 @@ components:
         \ Pickup at one or more of the merchant's physical stores.<br><br>In-Store\
         \ Pickup is only available to large merchants selling on the US, UK, Germany,\
         \ and Australia sites."
-    BaseResponse:
+    BaseResponseBody:
       type: "object"
       properties:
         warnings:
@@ -6392,7 +6392,7 @@ components:
             $ref: "#/components/schemas/GetInventoryItem"
       description: "This type is used by the base request of the <strong>bulkGetInventoryItem</strong>\
         \ method."
-    BulkGetInventoryItemResponse:
+    BulkGetInventoryItemResponseBody:
       type: "object"
       properties:
         responses:
@@ -6401,7 +6401,7 @@ components:
             \ response. The results of each attempted inventory item retrieval is\
             \ captured under this container."
           items:
-            $ref: "#/components/schemas/GetInventoryItemResponse"
+            $ref: "#/components/schemas/GetInventoryItemResponseBody"
       description: "This type is used by the base response of the <strong>bulkGetInventoryItem</strong>\
         \ method."
     BulkInventoryItem:
@@ -6417,7 +6417,7 @@ components:
             $ref: "#/components/schemas/InventoryItemWithSkuLocale"
       description: "The base request of the <strong>bulkCreateOrReplaceInventoryItem</strong>\
         \ method."
-    BulkInventoryItemResponse:
+    BulkInventoryItemResponseBody:
       type: "object"
       properties:
         responses:
@@ -6426,7 +6426,7 @@ components:
             \ response. The results of each attempted inventory item creation/update\
             \ is captured under this container."
           items:
-            $ref: "#/components/schemas/InventoryItemResponse"
+            $ref: "#/components/schemas/InventoryItemResponseBody"
       description: "This type is used by the base response of the <strong>bulkCreateOrReplaceInventoryItem</strong>\
         \ method."
     BulkMigrateListing:
@@ -6441,7 +6441,7 @@ components:
             $ref: "#/components/schemas/MigrateListing"
       description: "This type is used by the base container of the <strong>bulkMigrateListings</strong>\
         \ request payload."
-    BulkMigrateListingResponse:
+    BulkMigrateListingResponseBody:
       type: "object"
       properties:
         responses:
@@ -6450,7 +6450,7 @@ components:
             \ <strong>bulkMigrateListings</strong> call. The results of each attempted\
             \ listing migration is captured under this container."
           items:
-            $ref: "#/components/schemas/MigrateListingResponse"
+            $ref: "#/components/schemas/MigrateListingResponseBody"
       description: "This type is used by the response payload of the <strong>bulkMigrateListings</strong>\
         \ call."
     BulkOffer:
@@ -6465,13 +6465,13 @@ components:
             $ref: "#/components/schemas/OfferKeyWithId"
       description: "This type is used by the base request of the <strong>bulkPublishOffer</strong>\
         \ method, which is used to publish up to 25 different offers."
-    BulkOfferResponse:
+    BulkOfferResponseBody:
       type: "object"
       properties:
         responses:
           type: "array"
           items:
-            $ref: "#/components/schemas/OfferSkuResponse"
+            $ref: "#/components/schemas/OfferSkuResponseBody"
       description: "This type is used by the base response of the <strong>bulkCreateOffer</strong>\
         \ method."
     BulkPriceQuantity:
@@ -6489,7 +6489,7 @@ components:
         \ to update the total 'ship-to-home' quantity of one or more inventory items\
         \ (up to 25) and/or to update the price and/or quantity of one or more specific\
         \ published offers."
-    BulkPriceQuantityResponse:
+    BulkPriceQuantityResponseBody:
       type: "object"
       properties:
         responses:
@@ -6500,14 +6500,14 @@ components:
             \ if any errors or warnings are triggered while trying to update those\
             \ offers/inventory items."
           items:
-            $ref: "#/components/schemas/PriceQuantityResponse"
+            $ref: "#/components/schemas/PriceQuantityResponseBody"
       description: "This type is use by the base response payload of the <strong>bulkUpdatePriceQuantity</strong>\
         \ call. The <strong>bulkUpdatePriceQuantity</strong> call response will return\
         \ an HTTP status code, offer ID, and SKU value for each offer/inventory item\
         \ being updated, as well as an <strong>errors</strong> and/or <strong>warnings</strong>\
         \ container if any errors or warnings are triggered while trying to update\
         \ those offers/inventory items."
-    BulkPublishResponse:
+    BulkPublishResponseBody:
       type: "object"
       properties:
         responses:
@@ -7773,7 +7773,7 @@ components:
       description: "This type is used to display the expected listing fees for each\
         \ unpublished offer specified in the request of the <strong>getListingFees</strong>\
         \ call."
-    FeesSummaryResponse:
+    FeesSummaryResponseBody:
       type: "object"
       properties:
         feeSummaries:
@@ -7848,7 +7848,7 @@ components:
       description: "The seller-defined Stock-Keeping Unit (SKU) of each inventory\
         \ item that the user wants to retrieve is passed in the request of the <strong>bulkGetInventoryItem</strong>\
         \ method."
-    GetInventoryItemResponse:
+    GetInventoryItemResponseBody:
       type: "object"
       properties:
         errors:
@@ -8366,7 +8366,7 @@ components:
         \ be returned under the <strong>inventoryItems</strong> container, dependent\
         \ on how many eBay listings the seller is attempting to migrate to the inventory\
         \ model."
-    InventoryItemResponse:
+    InventoryItemResponseBody:
       type: "object"
       properties:
         errors:
@@ -9018,7 +9018,7 @@ components:
         \ call to provide details on the inventory location, including the location's\
         \ name, physical address, operating hours, special hours, phone number and\
         \ other details of an inventory location."
-    InventoryLocationResponse:
+    InventoryLocationResponseBody:
       type: "object"
       properties:
         location:
@@ -9436,7 +9436,7 @@ components:
             $ref: "#/components/schemas/LocationAvailabilityDetails"
       description: "This type provides an array of locations that are associated with\
         \ a SKU within a listing."
-    LocationResponse:
+    LocationResponseBody:
       type: "object"
       properties:
         href:
@@ -9474,7 +9474,7 @@ components:
           type: "array"
           description: "An array of one or more of the merchant's inventory locations."
           items:
-            $ref: "#/components/schemas/InventoryLocationResponse"
+            $ref: "#/components/schemas/InventoryLocationResponseBody"
       description: "This type is used by the base response payload for the <strong>getInventoryLocations</strong>\
         \ call."
     Manufacturer:
@@ -9546,7 +9546,7 @@ components:
             \ that are stated at the top of this Call Reference page."
       description: "This type is used to specify one to five eBay listings that will\
         \ be migrated to the new Inventory model."
-    MigrateListingResponse:
+    MigrateListingResponseBody:
       type: "object"
       properties:
         errors:
@@ -9703,7 +9703,7 @@ components:
         \ a <strong>Bulk Update Price and Quantity</strong> call to update the current\
         \ price and/or quantity of one or more offers associated with a specific inventory\
         \ item."
-    OfferResponse:
+    OfferResponseBody:
       type: "object"
       properties:
         offerId:
@@ -9766,7 +9766,7 @@ components:
         \ publishing the offer and creating the new eBay listing, the information\
         \ about why the listing failed should be returned in the <strong>errors</strong>\
         \ and/or <strong>warnings</strong> containers."
-    OfferSkuResponse:
+    OfferSkuResponseBody:
       type: "object"
       properties:
         errors:
@@ -10076,7 +10076,7 @@ components:
       description: "This type is used to update the total \"ship-to-home\"  quantity\
         \ for one or more inventory items and/or to update the price and/or quantity\
         \ of one or more specific offers associated with one or more inventory items."
-    PriceQuantityResponse:
+    PriceQuantityResponseBody:
       type: "object"
       properties:
         errors:
@@ -10690,7 +10690,7 @@ components:
         \ call. The identifier of the inventory item group to publish and the eBay\
         \ marketplace where the listing will be published is needed in the request\
         \ payload."
-    PublishResponse:
+    PublishResponseBody:
       type: "object"
       properties:
         listingId:
@@ -11415,7 +11415,7 @@ components:
             \ API documentation</a>"
       description: "This type is used by the base request of the <strong>WithdrawByInventoryItemGroup</strong>\
         \ method, which is used to end a multiple-variation listing."
-    WithdrawResponse:
+    WithdrawResponseBody:
       type: "object"
       properties:
         listingId:
