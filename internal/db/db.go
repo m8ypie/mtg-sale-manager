@@ -20,7 +20,7 @@ func GetDb() *gorm.DB {
 	once.Do(func() {
 		var err error
 		db, err = gorm.Open(postgres.Open(config.PostGresUri), &gorm.Config{})
-		db.AutoMigrate(&models.EbayListingGorm{})
+		db.AutoMigrate(&models.EbayListing{})
 		if err != nil {
 			log.Fatalf("Error connecting to database: %v", err)
 		}

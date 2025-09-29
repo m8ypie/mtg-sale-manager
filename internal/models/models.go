@@ -15,8 +15,8 @@ type Model struct {
 
 type EbayListingGorm struct {
 	gorm.Model
-	EbayListingId      string `gorm:"column:ebay_listing_id"`
-	EbayOfferId        string `gorm:"column:ebay_offer_id"`
+	EbayListingId      string `gorm:"column:ebay_listing_id;uniqueIndex"`
+	EbayOfferId        string `gorm:"column:ebay_offer_id;uniqueIndex"`
 	Sku                string `gorm:"column:sku"`
 	ScryFallId         string `gorm:"column:scryfall_id"`
 	EchoMtgInventoryId string `gorm:"column:echo_mtg_inventory_id"`
@@ -24,6 +24,7 @@ type EbayListingGorm struct {
 
 type EbayListing struct {
 	Model
+	EbayTitle          string
 	EbayListingId      string
 	EbayOfferId        string
 	Sku                string
@@ -55,11 +56,10 @@ func (m EbayListingGorm) FromEntity(entity EbayListing) interface{} {
 			UpdatedAt: entity.UpdatedAt,
 			DeletedAt: entity.DeletedAt,
 		},
-		EbayListingId:      entity.EbayListingId,
-		EbayOfferId:        entity.EbayOfferId,
-		Sku:                entity.Sku,
-		ScryFallId:         entity.ScryFallId,
-		EchoMtgInventoryId: entity.EchoMtgInventoryId,
+		EbayListingId: entity.EbayListingId,
+		EbayOfferId:   entity.EbayOfferId,
+		Sku:           entity.Sku,
+		ScryFallId:    entity.ScryFallId,
 	}
 }
 

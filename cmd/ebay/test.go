@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
 	"log"
 	"os"
 
 	"github.com/m8ypie/mtg-sale-manager/internal/config"
-	"github.com/m8ypie/mtg-sale-manager/internal/db"
-	"github.com/m8ypie/mtg-sale-manager/internal/models"
-	"github.com/m8ypie/mtg-sale-manager/internal/repositories"
 
 	"github.com/m8ypie/mtg-sale-manager/internal/services"
 )
@@ -36,46 +33,36 @@ func main() {
 	// }
 	// log.Printf("Card Details: %+v\n", card)
 	// popDb()
-	newMe()
+	re()
+	services.GetAllListingsWithUnderCut()
+
 }
 
-func newMe() {
-	ctx := context.Background()
-	cardListing, error := repositories.NewGlobalRepository(db.GetDb()).EbayListing.FindByID(ctx, 5)
-	if error != nil {
-		log.Fatalf("Error fetching ebay listing: %v", error)
+func re() {
+	listings := services.GetEbayListingsWithOffer()
+	for _, listing := range *listings {
+		services.RecordNewEbayListingWithOffer(&listing)
+		if listing.EbayListing.Product != nil && listing.EbayListing.Product.Title != nil {
+			writeJsonToFile(*listing.EbayListing.Product.Title+".json", listing)
+		} else {
+			log.Printf("Warning: listing.Product.Title is nil for listing: %+v\n", listing)
+		}
 	}
-	comp := services.GetCompositeEbayListing(&cardListing)
-	log.Printf("comp %v", comp)
-}
-
-func popDb() {
-	sku := "d5806e68-1054-458e-866d-1f2470f682b2"
-	offerId := "70191510011"
-	listingId := "187575984289"
-	emid := "150075"
-	scryFallId := "d5806e68-1054-458e-866d-1f2470f682b2"
-	ebayListing := models.EbayListing{
-		Sku:                sku,
-		EbayOfferId:        offerId,
-		EbayListingId:      listingId,
-		EchoMtgInventoryId: emid,
-		ScryFallId:         scryFallId,
-	}
-	ctx := context.Background()
-	error := repositories.NewGlobalRepository(db.GetDb()).EbayListing.Insert(ctx, &ebayListing)
-	if error != nil {
-		log.Fatalf("Error inserting ebay listing: %v", error)
-	}
-	listings, err := repositories.NewGlobalRepository(db.GetDb()).EbayListing.FindAll(ctx)
-	if err != nil {
-		log.Fatalf("Error fetching ebay listings: %v", err)
-	}
-	for _, listing := range listings {
-		log.Printf("Ebay Listing: %+v\n", listing)
-	}
+	//writeStringToFile("ebay_response.json", string(listings.))
 }
 
 func writeStringToFile(filename, data string) error {
 	return os.WriteFile(filename, []byte(data), 0644)
+}
+
+func writeJsonToFile(filename string, data interface{}) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(data)
 }

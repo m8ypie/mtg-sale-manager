@@ -2,13 +2,12 @@ package clients
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
-	scryfall "github.com/BlueMonday/go-scryfall"
 	ebayBrowseClient "github.com/m8ypie/mtg-sale-manager/internal/clients/ebayBrowse"
 	ebayListingClient "github.com/m8ypie/mtg-sale-manager/internal/clients/ebayListing"
 	"github.com/m8ypie/mtg-sale-manager/internal/config"
@@ -108,36 +107,24 @@ type EbayCardClient struct {
 	EbayListingClient *ebayListingClient.ClientWithResponses
 }
 
+func SetHeaders(httpClient *EbayListingsFetcherHttpClient) func(ctx context.Context, req *http.Request) error {
+	return func(ctx context.Context, req *http.Request) error {
+		if httpClient.OAuth2Tokens.Expiry.After(time.Now()) {
+			httpClient.OAuth2Tokens, _ = httpClient.TokenSource.Token()
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Language", "en-AU")
+		req.Header.Set("Accept-Language", "en-AU")
+		req.Header.Set("X-EBAY-C-MARKETPLACE-ID", "EBAY_AU")
+		req.Header.Set("Authorization", "Bearer "+httpClient.OAuth2Tokens.AccessToken)
+
+		return nil
+	}
+}
+
 func NewEbayCardClient(httpClient *EbayListingsFetcherHttpClient) *EbayCardClient {
-	browseBaseClient := ebayBrowseClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		if httpClient.OAuth2Tokens.Expiry.After(time.Now()) {
-			httpClient.OAuth2Tokens, _ = httpClient.TokenSource.Token()
-		}
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Content-Language", "en-AU")
-		req.Header.Set("Accept-Language", "en-AU")
-		req.Header.Set("X-EBAY-C-MARKETPLACE-ID", "EBAY_AU")
-		req.Header.Set("Authorization", "Bearer "+httpClient.OAuth2Tokens.AccessToken)
-		// httpClient.OAuth2Tokens.SetAuthHeader(req)
-		println("hererere %s", req.Header.Get("Authorization"))
-
-		return nil
-	})
-	listingBaseClient := ebayListingClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		if httpClient.OAuth2Tokens.Expiry.After(time.Now()) {
-			httpClient.OAuth2Tokens, _ = httpClient.TokenSource.Token()
-		}
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Content-Language", "en-AU")
-		req.Header.Set("Accept-Language", "en-AU")
-		req.Header.Set("X-EBAY-C-MARKETPLACE-ID", "EBAY_AU")
-		req.Header.Set("Authorization", "Bearer "+httpClient.OAuth2Tokens.AccessToken)
-		// httpClient.OAuth2Tokens.SetAuthHeader(req)
-		println("hererere %s", req.Header.Get("Authorization"))
-
-		return nil
-	})
-	println("hererere %s", httpClient.OAuth2Tokens.AccessToken) ///sell/inventory/v1
+	browseBaseClient := ebayBrowseClient.WithRequestEditorFn(SetHeaders(httpClient))
+	listingBaseClient := ebayListingClient.WithRequestEditorFn(SetHeaders(httpClient))
 	browseClient, err := ebayBrowseClient.NewClientWithResponses("https://api.ebay.com/buy/browse/v1", browseBaseClient)
 	listingClient, err2 := ebayListingClient.NewClientWithResponses("https://api.ebay.com/sell/inventory/v1", listingBaseClient)
 	if err != nil {
@@ -162,10 +149,28 @@ func (e *EbayCardClient) GetListings(query string) (*ebayBrowseClient.SearchResp
 	})
 }
 
-func (e *EbayCardClient) GetPublicListingsForCard(scryfallCard *scryfall.Card) *ebayBrowseClient.SearchResponse {
+func (e *EbayCardClient) GetActiveListings() (*ebayListingClient.GetInventoryItemsResponse, error) {
+	return e.EbayListingClient.GetInventoryItemsWithResponse(context.Background(), &ebayListingClient.GetInventoryItemsParams{})
+}
+
+func (e *EbayCardClient) GetLiveOffers(sku *string) (*[]ebayListingClient.EbayOfferDetailsWithAll, error) {
+	resp, err := e.EbayListingClient.GetOffersWithResponse(context.Background(), &ebayListingClient.GetOffersParams{
+		Sku: sku,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var filtered []ebayListingClient.EbayOfferDetailsWithAll
+	for _, offer := range *resp.JSON200.Offers {
+		if offer.Listing.ListingStatus != nil && *offer.Listing.ListingStatus == "ACTIVE" {
+			filtered = append(filtered, offer)
+		}
+	}
+	return &filtered, nil
+}
+func (e *EbayCardClient) GetPublicListingsForCard(ebayListing *models.EbayListing) *ebayBrowseClient.SearchResponse {
 	filter := "itemLocationCountry:AU"
-	query := removePunctuation(scryfallCard.Name + " " + scryfallCard.CollectorNumber)
-	println("query is " + query)
+	query := removePunctuation(ebayListing.EbayTitle)
 	res, err := e.EbayBrowseClient.SearchWithResponse(context.Background(), &ebayBrowseClient.SearchParams{
 		Q:      &query,
 		Filter: &filter,
@@ -174,21 +179,14 @@ func (e *EbayCardClient) GetPublicListingsForCard(scryfallCard *scryfall.Card) *
 		log.Fatalf("Error fetching eBay listings: %v", err)
 	}
 
-	reqBodyString := string(res.Body)
-	fmt.Printf("resp.JSON200: %v\n", reqBodyString)
 	return res
 }
 
 func (e *EbayCardClient) GetOwnedOfferForCard(ebayListing *models.EbayListing) *ebayListingClient.GetOfferResponse {
-	query := removePunctuation(ebayListing.EbayOfferId + " " + ebayListing.Sku)
-	println("query is " + query)
 	res, err := e.EbayListingClient.GetOfferWithResponse(context.Background(), ebayListing.EbayOfferId)
 	if err != nil {
 		log.Fatalf("Error fetching eBay listings: %v", err)
 	}
-
-	reqBodyString := string(res.Body)
-	fmt.Printf("resp.JSON200: %v\n", reqBodyString)
 	return res
 }
 
@@ -198,5 +196,5 @@ func removePunctuation(s string) string {
 	// you want to remove.
 	// `[^a-zA-Z0-9\s]` matches any character that is not an alphanumeric character or whitespace.
 	re := regexp.MustCompile(`[^a-zA-Z0-9\s]+`)
-	return re.ReplaceAllString(s, "")
+	return strings.Join(strings.Fields(re.ReplaceAllString(s, "")), " ")
 }
