@@ -33,14 +33,8 @@ func GetCompositeEbayListing(ebayListing *models.EbayListing) CompositeEbayListi
 
 func RecordNewEbayListingWithOffer(ebayListingWithOffer *EbayListingWithOffer) {
 	ctx := context.Background()
-	listing := models.EbayListing{
-		EbayTitle:     *ebayListingWithOffer.EbayListing.Product.Title,
-		EbayListingId: *ebayListingWithOffer.EbayOffer.Listing.ListingId,
-		EbayOfferId:   *ebayListingWithOffer.EbayOffer.OfferId,
-		Sku:           *ebayListingWithOffer.EbayListing.Sku,
-		ScryFallId:    *ebayListingWithOffer.EbayListing.Sku,
-	}
-	repositories.NewGlobalRepository(db.GetDb()).EbayListing.Upsert(ctx, &listing)
+	listing := ebayListingWithOffer.ToListing()
+	repositories.NewGlobalRepository(db.GetDb()).EbayListing.Upsert(ctx, listing)
 }
 
 func GetAllListingsWithUnderCut() {
@@ -57,8 +51,26 @@ func GetAllListingsWithUnderCut() {
 			} else {
 				println("No undercut", "Title:", comp.ScryfallInfo.Name, "Lowest Price:", fmt.Sprintf("%.2f", comp.PriceInfo.Min), "My Price:", fmt.Sprintf("%.2f", offerPrice))
 			}
+
 		}
 	}
+}
+
+func GetAllListingsWithUnderCutNoDb() []*CompositeEbayListing {
+	allListings := GetEbayListingsWithOffer()
+	var compositeEbayListing []*CompositeEbayListing
+	for _, listing := range *allListings {
+		println("running ", listing.EbayListing.Product.Title)
+		comp := GetCompositeEbayListing(listing.ToListing())
+		offer := GetLowestOffer(listing.EbayListing.Sku)
+		if offer != nil && offer.PricingSummary != nil && offer.PricingSummary.Price != nil {
+			offerPrice := convertStringToFloat(offer.PricingSummary.Price.Value)
+			comp.MyPrice = &offerPrice
+			comp.CompetitionsPrice = &comp.PriceInfo.Min
+			compositeEbayListing = append(compositeEbayListing, &comp)
+		}
+	}
+	return compositeEbayListing
 }
 
 func GetEbayListingsWithOffer() *[]EbayListingWithOffer {

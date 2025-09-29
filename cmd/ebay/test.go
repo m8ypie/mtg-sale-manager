@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
-	"os"
+	"fmt"
 
 	"github.com/m8ypie/mtg-sale-manager/internal/config"
 
@@ -33,36 +31,9 @@ func main() {
 	// }
 	// log.Printf("Card Details: %+v\n", card)
 	// popDb()
-	re()
-	services.GetAllListingsWithUnderCut()
-
-}
-
-func re() {
-	listings := services.GetEbayListingsWithOffer()
-	for _, listing := range *listings {
-		services.RecordNewEbayListingWithOffer(&listing)
-		if listing.EbayListing.Product != nil && listing.EbayListing.Product.Title != nil {
-			writeJsonToFile(*listing.EbayListing.Product.Title+".json", listing)
-		} else {
-			log.Printf("Warning: listing.Product.Title is nil for listing: %+v\n", listing)
-		}
+	// re()
+	for _, re := range services.GetAllListingsWithUnderCutNoDb() {
+		fmt.Println(*re.ToString())
 	}
-	//writeStringToFile("ebay_response.json", string(listings.))
-}
 
-func writeStringToFile(filename, data string) error {
-	return os.WriteFile(filename, []byte(data), 0644)
-}
-
-func writeJsonToFile(filename string, data interface{}) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	return encoder.Encode(data)
 }
